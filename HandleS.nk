@@ -1,0 +1,22 @@
+set cut_paste_input [stack 0]
+version 14.0 v5
+push $cut_paste_input
+NoOp {
+ name HandleS
+ tile_color 0xe0e0eff
+ gl_color 0x9b835eff
+ label "\n\n."
+ note_font "DejaVu Sans Bold Italic"
+ note_font_size 15
+ note_font_color 0xe9b763ff
+ selected true
+ xpos -150
+ ypos -164
+ hide_input true
+ addUserKnob {20 User l -}
+ addUserKnob {26 txt l "" +STARTLINE T "<b><font size=\"40\"><font color=\"#BAA655\">HandleS</font></b>"}
+ addUserKnob {26 ""}
+ addUserKnob {22 Plus l + T "import nuke\n\ndef show_save_hotkey_panel(default_text):\n    panel = nuke.Panel('Save Hotkey')\n    panel.addSingleLineInput('Set Name or Range', default_text)\n    if panel.show():\n        return panel.value('Set Name or Range')\n    return None\n\ndef generate_knob_script(frame_range):\n    script = f'frame_range=\"\{frame_range\}\"\\n\\n' + \"\"\"\ndef set_frame_range():\n    viewer = nuke.activeViewer().node()\n    viewer\['frame_range_lock'].setValue(1)\n    viewer\['frame_range'].setValue(frame_range)\n\nset_frame_range()\n\"\"\"\n    return script\n\ndef add_preset_knob(node, knob_name, label, script):\n    knob = nuke.PyScript_Knob(knob_name, label, \"\")\n    node.addKnob(knob)\n    node\[knob_name].setValue(script)\n\ndef main():\n    \"\"\"Main function to run the script.\"\"\"\n    viewer_node = nuke.activeViewer().node()\n    start_frame, end_frame = viewer_node\['frame_range'].value().split(\"-\")\n    default_text = f\"\{start_frame\} - \{end_frame\}\"\n\n    user_input = show_save_hotkey_panel(default_text)\n    if not user_input:\n        return\n\n    frame_range = user_input.replace(\" \", \"\")\n\n    knob_script = generate_knob_script(frame_range)\n\n    current_node = nuke.thisNode()\n    preset_knobs = \[n for n in current_node.knobs().keys() if \"Preset\" in n]\n    next_knob_name = f\"Preset\{len(preset_knobs)\}\"\n\n    add_preset_knob(current_node, next_knob_name, user_input, knob_script)\n\nmain()\n" +STARTLINE}
+ addUserKnob {22 Minus l - -STARTLINE T "import nuke\n\ndef remove_latest_preset():\n    current_node = nuke.thisNode()\n    all_knobs = current_node.knobs()\n    \n    preset_knobs = \[n for n in current_node.knobs().keys() if \"Preset\" in n]\n    preset_count = len(preset_knobs)\n    \n    if preset_count > 0:\n        latest_preset_name = f\"Preset\{preset_count - 1\}\"\n        \n        try:\n            current_node.removeKnob(all_knobs\[latest_preset_name])\n        except KeyError:\n            nuke.message(f\"Error: Preset '\{latest_preset_name\}' not found.\")\n    else:\n        nuke.message(\"No presets to remove.\")\n\nremove_latest_preset()\n"}
+ addUserKnob {26 ""}
+}
